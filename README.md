@@ -1,84 +1,122 @@
-# Business Exchange — Etapas 1 a 3 (autenticação, chamados/escrow, avaliações e perfil)
+# Business Exchange
 
-Backend único e modular: Node.js + Express + TypeScript + Prisma (PostgreSQL).
-Frontend: Angular 17+ (componentes standalone). Banco: `01_schema.sql` (triggers e constraints continuam sendo a última barreira das regras).
+Plataforma web de microtarefas com **recompensa fixa** para intermediação segura de serviços técnicos. O contratante publica um chamado com valor definido, o valor fica **retido em escrow** e só é liberado ao executor depois que a entrega é validada.
 
-## Backend — como rodar
+Trabalho de Conclusão de Curso — Análise e Desenvolvimento de Sistemas, Centro Universitário CEUNI-FAMETRO.
+
+**Autores:** Adrian Arcanjo Araujo · Heverck Jorge da Silva Costa
+**Orientadora:** Profa. Luana Leal
+
+## Diferencial
+
+| | 99Freelas | Workana | GetNinjas | **Business Exchange** |
+|---|---|---|---|---|
+| Preço | Leilão de propostas | Propostas competitivas | Leads pagos pelo prestador | **Valor fixo, sem negociação** |
+| Garantia de pagamento | Sem escrow formal | Escrow em projetos grandes | Não retém valor | **Escrow com validação da entrega** |
+| Foco | Generalista | Projetos longos | Serviços presenciais | **Microtarefas técnicas pontuais** |
+
+## Tecnologias
+
+- **Frontend:** Angular 21, TypeScript, RxJS (testes com Vitest)
+- **Backend:** Node.js, Express, TypeScript, Zod, JWT, bcryptjs, Helmet, CORS e rate limit (testes com Jest e Supertest)
+- **Banco de dados:** PostgreSQL, acessado com Prisma ORM
+
+## Estrutura do repositório
+
+```
+/                   Frontend Angular
+/backend            API Node.js (Express + Prisma)
+/backend/prisma     Definição do banco
+```
+
+## Como executar
+
+### Pré-requisitos
+
+- Node.js 20 ou superior e npm
+- PostgreSQL 13 ou superior (com a extensão `citext` disponível)
+
+### 1. Banco de dados
+
+Crie o banco e aplique o schema:
+
+```bash
+createdb -U postgres businessexchange
+psql -U postgres -d businessexchange -f 01_schema.sql
+```
+
+No Windows, se o `psql` não estiver no PATH, use o pgAdmin: abra o Query Tool no banco `businessexchange`, carregue o `01_schema.sql` e execute.
+
+### 2. Backend
 
 ```bash
 cd backend
 npm install
-cp .env.example .env                 # ajuste DATABASE_URL e gere um JWT_SECRET forte
-psql -U postgres -d businessexchange -f ../01_schema.sql    # se ainda não aplicou
-psql -U postgres -d businessexchange -f prisma/seed.sql     # categorias iniciais
-npx prisma generate                  # NÃO rode migrate/db push: o banco é gerido pelo SQL
-npm run dev                          # http://localhost:3000
-npm test                             # TU-01..05 e TS-03
+cp .env.example .env        # no Windows: copy .env.example .env
 ```
 
-`prisma/schema.prisma` é um espelho escrito à mão do `01_schema.sql` (só colunas, sem relações). Se você mudar uma
-tabela no SQL, atualize o schema.prisma e rode `npx prisma generate` de novo.
+Edite o `.env` com a conexão do seu banco, o segredo do JWT e a origem permitida pelo CORS (`http://localhost:4200`). Depois:
 
-## Endpoints
+```bash
+npm run prisma:generate
+npm run dev
+```
 
-Autenticação (etapa 1)
+### 3. Frontend
 
-| Método | Rota | Descrição |
+Em outro terminal, na raiz do repositório:
+
+```bash
+npm install
+npm start
+```
+
+Acesse `http://localhost:4200`. Se o frontend não conseguir falar com a API, confira o valor de `apiUrl` em `src/environments/environment.ts` e o `CORS_ORIGIN` do backend.
+
+## Scripts
+
+| Local | Comando | Função |
 |---|---|---|
-| POST | `/auth/cadastro` · `/auth/login` · `/auth/refresh` · `/auth/logout` | Ver etapa 1 |
-| GET  | `/auth/me` | Perfil do usuário logado |
-| GET  | `/categorias` | Lista pública de categorias |
+| Frontend | `npm start` | Servidor de desenvolvimento |
+| Frontend | `npm run build` | Build de produção |
+| Frontend | `npm test` | Testes unitários |
+| Backend | `npm run dev` | API com recarga automática |
+| Backend | `npm run build` / `npm start` | Compila e executa |
+| Backend | `npm test` | Testes (Jest) |
+| Backend | `npm run typecheck` | Verificação de tipos |
 
-Chamados (etapa 2) — todos exigem `Authorization: Bearer <accessToken>`
+## Requisitos
 
-| Método | Rota | Perfil | O que faz |
-|---|---|---|---|
-| GET  | `/chamados?q=&categoriaId=&valorMin=&valorMax=&pagina=` | todos | Mural de chamados abertos |
-| GET  | `/chamados/meus?status=` | todos | Do contratante (publicados) ou do executor (aceitos) |
-| GET  | `/chamados/:id` | todos | Detalhe + `acoes` (quais botões mostrar). Transação, entregas e histórico só para as partes |
-| POST | `/chamados` | contratante | Cria o chamado e retém o valor em escrow na mesma transação SQL (TI-01, TI-02) |
-| PUT  | `/chamados/:id/aceitar` | executor | `aberto` → `em_andamento` (TI-03) |
-| POST | `/chamados/:id/entrega` | executor | `em_andamento` → `em_validacao` |
-| POST | `/chamados/:id/validar` | contratante | Libera o pagamento e conclui (TI-04) |
-| POST | `/chamados/:id/rejeitar` | contratante | Recusa a entrega com motivo: volta para `em_andamento`, valor segue retido |
-| POST | `/chamados/:id/cancelar` | contratante | Só antes do aceite: estorna o valor e cancela (TS-02) |
+**Funcionais**
+1. Cadastro e autenticação de contratantes e executores
+2. Publicação de chamados com descrição, categoria e recompensa fixa
+3. Aceite de chamados por executores disponíveis
+4. Retenção e liberação de pagamento (escrow) após validação
+5. Histórico de chamados e recomendação de profissionais
 
-Avaliações e perfil (etapa 3) — exigem token
+**Não funcionais:** segurança (JWT e SSL/TLS), escalabilidade, usabilidade, confiabilidade (integridade transacional no PostgreSQL) e manutenibilidade (código tipado e modular).
 
-| Método | Rota | O que faz |
-|---|---|---|
-| POST | `/chamados/:id/avaliacoes` | Avaliação mútua `{ nota: 1-5, comentario? }`. Só em chamado concluído, uma por parte; o avaliado é sempre a outra parte. O trigger do banco recalcula `nota_media` e `total_avaliacoes` |
-| GET  | `/usuarios/:id` | Perfil público: nota média, avaliações, chamados concluídos, bio/categorias (sem e-mail nem telefone) |
-| GET  | `/usuarios/:id/avaliacoes?pagina=` | Avaliações recebidas (paginadas; sem dados do chamado) |
+## Regras de negócio no banco
 
-O detalhe do chamado (`GET /chamados/:id`) agora traz `avaliacoes` e `acoes.podeAvaliar`; `GET /chamados/meus` traz
-`jaAvaliei`, que o front usa para destacar chamados concluídos ainda sem avaliação.
+O schema garante a consistência do escrow mesmo fora da aplicação:
 
-## Como as regras ficam protegidas
+- A transação segue a máquina de estados `pendente → retido → liberado | estornado`.
+- Um chamado só pode ser aceito com o valor retido e só é concluído depois da liberação do pagamento.
+- Avaliações só são permitidas em chamados concluídos e entre as partes envolvidas.
+- Cada mudança de status do chamado é registrada em `chamado_historico`.
 
-- Cada operação roda numa transação SQL e **trava a linha do chamado** (`SELECT … FOR UPDATE`): dois executores não
-  aceitam o mesmo chamado, e aceitar e cancelar não se atropelam.
-- As regras estão em `modules/chamados/dominio.ts` (funções puras, com testes). O banco repete as mesmas regras nos
-  triggers; se algo escapar, o erro do trigger volta como 409 com a mensagem do banco.
-- `app.usuario_id` é definido a cada transação, então `chamado_historico` registra quem fez cada mudança.
-- O gateway de pagamento é uma interface (`modules/pagamentos/gateway.ts`) com implementação **simulada**. Para um
-  gateway real, implemente `GatewayPagamento` e troque em `pagamento.facade.ts`. Atenção: a chamada ao gateway ocorre
-  dentro da transação SQL; com um gateway real, use uma chave de idempotência por transação.
+## Status do projeto
 
-## Frontend
+Em desenvolvimento, com gestão por Kanban (GitHub Projects).
 
-1. Copie `frontend/src/app/{core,shared,features}` e `frontend/src/environments` para o projeto Angular.
-2. `app.config.ts` com `provideHttpClient(withInterceptors([authInterceptor]))` (já está no exemplo).
-3. Use o `app.routes.ts` deste projeto. As telas logadas ficam dentro do `ShellComponent` (menu superior) protegido por
-   `authGuard`; `chamados/novo` exige o perfil contratante. `/chamados` agora é o mural; se você já tinha uma tela
-   principal, mantenha-a e aponte a rota para ela.
-4. Ajuste `environment.apiUrl`.
+| Funcionalidade | Situação |
+|---|---|
+| Cadastro e login (JWT) | Concluído |
+| Modelagem do banco | Concluído |
+| Publicação de chamados | Em desenvolvimento |
+| Fluxo de pagamento (escrow) | Em desenvolvimento |
+| Avaliações, histórico e recomendação | Planejado |
 
-Telas: login, cadastro, mural (filtros e paginação), novo chamado, meus chamados (com selo "Avaliar"), detalhe
-(aceitar, entregar, validar, recusar, cancelar, escrow, histórico e avaliação) e perfil público (`/usuarios/:id`).
+## Qualidade e testes
 
-## Decisões de segurança
-
-- Senhas com bcrypt, refresh token com rotação e detecção de reuso, JWT com algoritmo/issuer fixados, rate limit.
-- Links de entrega só aceitam `http(s)://` (backend e frontend) e abrem com `rel="noopener noreferrer"`.
-- Tokens no `localStorage` são simples para o TCC, mas expostos a XSS; em produção prefira cookie `HttpOnly`.
+A avaliação segue a ISO/IEC 25010. Os testes são organizados em três níveis: unitários (Jest e Vitest), de integração (Supertest com PostgreSQL de teste) e de sistema (Cypress). O critério de aceite é cobertura mínima de 70% nos módulos de Chamado e Transação.
