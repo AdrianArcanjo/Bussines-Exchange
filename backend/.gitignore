@@ -1,0 +1,20 @@
+node_modules
+dist
+build
+
+# Variáveis de ambiente
+.env
+.env.*
+!.env.example
+
+# Prisma client gerado
+/generated/prisma
+
+# Logs
+*.log
+npm-debug.log*
+
+# Sistema e editor
+.DS_Store
+Thumbs.db
+.idea/

@@ -1,0 +1,38 @@
+@charset "UTF-8";
+/* Tokens globais. Componentes só consomem var(--bx-*), nunca cores soltas. */
+:root {
+  --bx-ink: #14262b;
+  --bx-paper: #f3f6f5;
+  --bx-surface: #ffffff;
+  --bx-line: #d5ddda;
+  --bx-muted: #5b6e70;
+  --bx-accent: #0b7a5c;
+  --bx-accent-soft: #ddf1ea;
+  --bx-danger: #b3261e;
+  --bx-radius: 10px;
+  --bx-font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --bx-font-body: 'IBM Plex Sans', system-ui, sans-serif;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bx-paper);
+  color: var(--bx-ink);
+  font: 16px/1.5 var(--bx-font-body);
+}
+
+:focus-visible {
+  outline: 2px solid var(--bx-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

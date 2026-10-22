@@ -1,0 +1,44 @@
+<section class="mural">
+  <header class="cabecalho">
+    <h1>Mural de chamados</h1>
+    <p>Microtarefas com valor fixo. Aceite uma e receba quando o contratante validar a entrega.</p>
+  </header>
+
+  <app-chamado-filtros [(busca)]="busca" [(categoria)]="categoria" [(ordem)]="ordem" />
+
+  @if (aviso(); as mensagem) {
+    <p class="aviso" role="status">
+      <span>{{ mensagem }}</span>
+      <button type="button" (click)="aviso.set(null)">Fechar</button>
+    </p>
+  }
+
+  @if (carregando()) {
+    <p class="estado" role="status">Carregando chamados…</p>
+  } @else if (erro(); as mensagem) {
+    <div class="estado erro" role="alert">
+      <p>{{ mensagem }}</p>
+      <button type="button" (click)="carregar()">Tentar de novo</button>
+    </div>
+  } @else if (visiveis().length === 0) {
+    <div class="estado">
+      <p>Nenhum chamado encontrado com esses filtros.</p>
+      <button type="button" (click)="limparFiltros()">Limpar filtros</button>
+    </div>
+  } @else {
+    <p class="contagem">
+      {{ visiveis().length }} {{ visiveis().length === 1 ? 'chamado aberto' : 'chamados abertos' }}
+    </p>
+    <ul class="grade">
+      @for (chamado of visiveis(); track chamado.id) {
+        <li>
+          <app-chamado-card
+            [chamado]="chamado"
+            [aceitando]="aceitandoId() === chamado.id"
+            (aceitar)="aceitar($event)"
+          />
+        </li>
+      }
+    </ul>
+  }
+</section>

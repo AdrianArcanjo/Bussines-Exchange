@@ -1,0 +1,32 @@
+.filtros {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.8125rem;
+  color: var(--bx-muted);
+}
+
+input, select {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--bx-line);
+  border-radius: 8px;
+  background: var(--bx-surface);
+  color: var(--bx-ink);
+  font: 1rem var(--bx-font-body);
+}
+
+@media (max-width: 720px) {
+  .filtros {
+    grid-template-columns: 1fr 1fr;
+  }
+  .busca {
+    grid-column: 1/-1;
+  }
+}

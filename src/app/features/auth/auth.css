@@ -1,0 +1,47 @@
+:host { display: block; min-height: 100vh; }
+.tela { display: grid; grid-template-columns: minmax(280px, 5fr) 7fr; min-height: 100vh; }
+
+.marca { background: #12263f; color: #f4f7fa; padding: 3rem; display: flex; flex-direction: column; justify-content: space-between; gap: 2rem; }
+.marca h1 { font-size: 2.25rem; line-height: 1.1; margin: 0; font-weight: 700; letter-spacing: -0.02em; }
+.marca p { margin: 0.75rem 0 0; max-width: 32ch; color: #b9c6d6; line-height: 1.5; }
+
+/* Cartão de chamado: mostra o que o produto entrega (preço fixo, pagamento só após validação) */
+.chamado { background: #fff; color: #12263f; border-radius: 10px; padding: 1.25rem 1.5rem; max-width: 340px; border-left: 6px solid #e0a526; }
+.chamado .cod { font-weight: 700; color: #6b7a8c; font-size: 0.85rem; }
+.chamado .tit { margin: 0.35rem 0 0.9rem; font-weight: 600; line-height: 1.3; }
+.chamado .valor { font-size: 1.6rem; font-weight: 700; }
+.chamado .nota { font-size: 0.85rem; color: #55657a; margin-top: 0.25rem; }
+
+.painel { display: flex; align-items: center; justify-content: center; padding: 2rem 1.25rem; background: #f3f5f8; }
+form { width: 100%; max-width: 440px; display: grid; gap: 1rem; }
+h2 { margin: 0; font-size: 1.5rem; color: #12263f; }
+.sub { margin: -0.5rem 0 0; color: #55657a; }
+
+label { display: grid; gap: 0.35rem; font-size: 0.9rem; font-weight: 600; color: #26384f; }
+input, textarea { font: inherit; padding: 0.65rem 0.75rem; border: 1px solid #b9c3d0; border-radius: 8px; background: #fff; color: #12263f; }
+input:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid #2a6fdb; outline-offset: 2px; }
+input.invalido, textarea.invalido { border-color: #b3261e; }
+.erro { color: #b3261e; font-size: 0.82rem; font-weight: 500; }
+.alerta { background: #fdecea; color: #7a1a14; border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.92rem; }
+
+.linha { display: grid; grid-template-columns: 1fr 90px; gap: 0.75rem; }
+.perfis { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; border: 0; padding: 0; margin: 0; }
+.perfis legend { font-size: 0.9rem; font-weight: 600; color: #26384f; margin-bottom: 0.35rem; padding: 0; }
+.perfil { position: relative; display: block; border: 1px solid #b9c3d0; background: #fff; border-radius: 8px; padding: 0.7rem 0.85rem; cursor: pointer; }
+.perfil:has(input:checked) { border-color: #12263f; box-shadow: inset 0 0 0 1px #12263f; }
+.perfil input { position: absolute; opacity: 0; pointer-events: none; }
+.perfil:has(input:focus-visible) { outline: 3px solid #2a6fdb; outline-offset: 2px; }
+.perfil strong { display: block; color: #12263f; }
+.perfil span { font-size: 0.82rem; font-weight: 400; color: #55657a; }
+
+button[type=submit] { font: inherit; font-weight: 700; padding: 0.8rem; border: 0; border-radius: 8px; background: #12263f; color: #fff; cursor: pointer; }
+button[type=submit]:disabled { opacity: 0.6; cursor: progress; }
+.troca { text-align: center; color: #55657a; margin: 0; }
+.troca a { color: #12263f; font-weight: 600; }
+
+@media (max-width: 800px) {
+  .tela { grid-template-columns: 1fr; }
+  .marca { padding: 1.5rem; }
+  .marca h1 { font-size: 1.6rem; }
+  .chamado { display: none; }
+}

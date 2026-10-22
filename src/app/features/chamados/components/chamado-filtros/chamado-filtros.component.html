@@ -1,0 +1,30 @@
+<div class="filtros" role="search">
+  <label class="campo busca">
+    <span>Buscar</span>
+    <input
+      type="search"
+      placeholder="Título, descrição ou código"
+      [value]="busca()"
+      (input)="onBusca($event)"
+    />
+  </label>
+
+  <label class="campo">
+    <span>Categoria</span>
+    <select [value]="categoria()" (change)="onCategoria($event)">
+      <option value="todas">Todas</option>
+      @for (c of categorias; track c.valor) {
+        <option [value]="c.valor">{{ c.rotulo }}</option>
+      }
+    </select>
+  </label>
+
+  <label class="campo">
+    <span>Ordenar por</span>
+    <select [value]="ordem()" (change)="onOrdem($event)">
+      @for (o of ordens; track o.valor) {
+        <option [value]="o.valor">{{ o.rotulo }}</option>
+      }
+    </select>
+  </label>
+</div>

@@ -1,0 +1,164 @@
+// Espelho do 01_schema.sql (escrito à mão, só com colunas; sem relações).
+// O banco é criado/alterado pelo SQL: NÃO rode `prisma migrate` nem `prisma db push`.
+// Para usar: npx prisma generate
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum tipo_usuario {
+  contratante
+  executor
+}
+
+enum status_chamado {
+  aberto
+  em_andamento
+  em_validacao
+  concluido
+  cancelado
+}
+
+enum status_transacao {
+  pendente
+  retido
+  liberado
+  estornado
+}
+
+enum status_entrega {
+  pendente
+  aprovada
+  rejeitada
+}
+
+model usuarios {
+  id               String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tipo             tipo_usuario
+  nome             String       @db.VarChar(120)
+  email            String       @unique @db.Citext
+  senha_hash       String
+  telefone         String?      @db.VarChar(20)
+  cidade           String?      @db.VarChar(80)
+  uf               String?      @db.Char(2)
+  latitude         Decimal?     @db.Decimal(9, 6)
+  longitude        Decimal?     @db.Decimal(9, 6)
+  nota_media       Decimal      @default(0) @db.Decimal(3, 2)
+  total_avaliacoes Int          @default(0)
+  ativo            Boolean      @default(true)
+  criado_em        DateTime     @default(now()) @db.Timestamptz(6)
+  atualizado_em    DateTime     @default(now()) @db.Timestamptz(6)
+
+  @@unique([id, tipo])
+}
+
+model contratantes {
+  usuario_id   String       @id @db.Uuid
+  tipo         tipo_usuario @default(contratante)
+  empresa_nome String?      @db.VarChar(150)
+  cpf_cnpj     String?      @unique @db.VarChar(18)
+}
+
+model executores {
+  usuario_id String       @id @db.Uuid
+  tipo       tipo_usuario @default(executor)
+  bio        String?
+  disponivel Boolean      @default(true)
+}
+
+model refresh_tokens {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  usuario_id  String    @db.Uuid
+  token_hash  String    @unique
+  expira_em   DateTime  @db.Timestamptz(6)
+  revogado_em DateTime? @db.Timestamptz(6)
+  criado_em   DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@index([usuario_id])
+}
+
+model categorias {
+  id    Int     @id @default(autoincrement()) @db.SmallInt
+  nome  String  @unique @db.VarChar(80)
+  slug  String  @unique @db.VarChar(80)
+  ativa Boolean @default(true)
+}
+
+model executor_categorias {
+  executor_id  String @db.Uuid
+  categoria_id Int    @db.SmallInt
+
+  @@id([executor_id, categoria_id])
+}
+
+model chamados {
+  id             String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  numero         BigInt         @unique @default(autoincrement())
+  codigo         String? // coluna gerada pelo banco ('BX-0001'); nunca enviada no INSERT
+  titulo         String         @db.VarChar(150)
+  descricao      String
+  categoria_id   Int            @db.SmallInt
+  valor_fixo     Decimal        @db.Decimal(12, 2)
+  status         status_chamado @default(aberto)
+  contratante_id String         @db.Uuid
+  executor_id    String?        @db.Uuid
+  prazo_entrega  DateTime?      @db.Timestamptz(6)
+  aceito_em      DateTime?      @db.Timestamptz(6)
+  entregue_em    DateTime?      @db.Timestamptz(6)
+  concluido_em   DateTime?      @db.Timestamptz(6)
+  cancelado_em   DateTime?      @db.Timestamptz(6)
+  criado_em      DateTime       @default(now()) @db.Timestamptz(6)
+  atualizado_em  DateTime       @default(now()) @db.Timestamptz(6)
+}
+
+model chamado_historico {
+  id              BigInt          @id @default(autoincrement())
+  chamado_id      String          @db.Uuid
+  status_anterior status_chamado?
+  status_novo     status_chamado
+  usuario_id      String?         @db.Uuid
+  criado_em       DateTime        @default(now()) @db.Timestamptz(6)
+}
+
+model entregas {
+  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  chamado_id      String         @db.Uuid
+  descricao       String
+  link_url        String?
+  status          status_entrega @default(pendente)
+  motivo_rejeicao String?
+  enviada_em      DateTime       @default(now()) @db.Timestamptz(6)
+  avaliada_em     DateTime?      @db.Timestamptz(6)
+}
+
+model transacoes {
+  id                 String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  chamado_id         String           @unique @db.Uuid
+  contratante_id     String           @db.Uuid
+  executor_id        String?          @db.Uuid
+  valor              Decimal          @db.Decimal(12, 2)
+  status             status_transacao @default(pendente)
+  gateway_referencia String?          @db.VarChar(120)
+  retido_em          DateTime?        @db.Timestamptz(6)
+  liberado_em        DateTime?        @db.Timestamptz(6)
+  estornado_em       DateTime?        @db.Timestamptz(6)
+  criado_em          DateTime         @default(now()) @db.Timestamptz(6)
+  atualizado_em      DateTime         @default(now()) @db.Timestamptz(6)
+}
+
+model avaliacoes {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  chamado_id   String   @db.Uuid
+  avaliador_id String   @db.Uuid
+  avaliado_id  String   @db.Uuid
+  nota         Int      @db.SmallInt
+  comentario   String?
+  criado_em    DateTime @default(now()) @db.Timestamptz(6)
+
+  @@unique([chamado_id, avaliador_id])
+  @@index([avaliado_id])
+}

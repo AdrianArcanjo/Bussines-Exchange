@@ -1,0 +1,12 @@
+<header class="topo">
+  <a class="marca" routerLink="/">Business Exchange</a>
+  <nav aria-label="Principal">
+    @for (item of menu; track item.rota) {
+      <a [routerLink]="item.rota" routerLinkActive="ativo">{{ item.rotulo }}</a>
+    }
+  </nav>
+</header>
+
+<main class="conteudo">
+  <router-outlet />
+</main>

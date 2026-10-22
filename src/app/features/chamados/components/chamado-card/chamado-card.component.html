@@ -1,0 +1,31 @@
+<article class="ticket">
+  <div class="corpo">
+    <div class="meta">
+      <span class="codigo">{{ chamado().codigo }}</span>
+      <span>{{ chamado().criadoEm | tempoRelativo }}</span>
+    </div>
+
+    <h3>{{ chamado().titulo }}</h3>
+    <p class="desc">{{ chamado().descricao }}</p>
+
+    <div class="rodape-corpo">
+      <span class="categoria">{{ rotulos[chamado().categoria] }}</span>
+      <span class="autor">por {{ chamado().contratanteNome }}</span>
+    </div>
+  </div>
+
+  <footer class="rodape">
+    <div class="valor">
+      <small>Recompensa fixa</small>
+      <strong>{{ chamado().recompensa | currency: 'BRL' }}</strong>
+    </div>
+    <button
+      type="button"
+      [disabled]="aceitando()"
+      [attr.aria-label]="'Aceitar chamado ' + chamado().codigo"
+      (click)="aceitar.emit(chamado().id)"
+    >
+      {{ aceitando() ? 'Aceitando…' : 'Aceitar chamado' }}
+    </button>
+  </footer>
+</article>
